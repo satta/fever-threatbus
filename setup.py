@@ -25,7 +25,8 @@ setup(
         "pyzmq >= 19",
         "stix2 >= 2.1, < 3.0",
         "threatbus >= 2021.5.27",
-    ],
+        "grpcio",
+        "protobuf"    ],
     keywords=[
         "open source",
         "threatbus",
