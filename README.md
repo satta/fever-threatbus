@@ -1,7 +1,8 @@
 FEVER Threat Bus connector
 ==========================
 
-The FEVER-Threat Bus connector acts as bridge between Threat Bus and FEVER,
+The FEVER-Threat Bus connector acts as bridge between [Threat Bus](https://github.com/tenzir/threatbus)
+and [FEVER](https://github.com/DCSO/fever),
 updating FEVER's internal Bloom filter matcher with all compatible indicators
 that are distributed via Threat Bus.
 
