@@ -3,7 +3,7 @@ FEVER Threat Bus connector
 
 The FEVER-Threat Bus connector acts as bridge between Threat Bus and FEVER,
 updating FEVER's internal Bloom filter matcher with all compatible indicators
-that are distributedd via Threat Bus.
+that are distributed via Threat Bus.
 
 ## Quick Start
 
