@@ -7,3 +7,5 @@ logging:
 
 threatbus: localhost:13370
 snapshot: 30
+
+socket: /tmp/fever-mgmt.sock
