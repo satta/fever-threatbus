@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import atexit
+from typing import Callable
 from dynaconf import Dynaconf, Validator
 from dynaconf.base import Settings
 from dynaconf.utils.boxing import DynaBox
@@ -11,9 +12,13 @@ import signal
 from stix2 import parse
 import sys
 from threatbus.logger import setup as setup_logging_threatbus
+from threatbus import stix2_helpers
 import zmq
+import mgmt_pb2, mgmt_pb2_grpc
+import grpc
+from google.protobuf import empty_pb2
 
-logger_name = "zmq-app-template"
+logger_name = "fever-threatbus"
 logger = logging.getLogger(logger_name)
 # List of all running async tasks of the bridge.
 async_tasks = []
@@ -21,6 +26,11 @@ async_tasks = []
 p2p_topic = None
 # Boolean flag indicating that the user has issued a SIGNAL (e.g., SIGTERM).
 user_exit = False
+# gRPC channel
+channel = None
+# gRPC stub
+stub = None
+
 
 ### --------------------------- Application helpers ---------------------------
 
@@ -57,7 +67,7 @@ def validate_config(config: Settings):
             "logging.filename", required=True, when=Validator("logging.file", eq=True)
         ),
         Validator("threatbus", required=True),
-        Validator("snapshot", is_type_of=int, required=True),
+        Validator("socket", required=True),
     ]
     config.validators.register(*validators)
     config.validators.validate()
@@ -182,10 +192,22 @@ async def heartbeat(endpoint: str, p2p_topic: str, interval: int = 5):
 
 ### --------------------------- The actual app logic ---------------------------
 
+def get_reconnector(socket: str):
+    global channel, stub, logger
+    async def establish_stream():
+        global channel, stub, logger
+        logger.info(f"Connecting to {socket}")
+        channel = grpc.aio.insecure_channel(f"unix://{socket}")
+        await channel.channel_ready()
+        stub = mgmt_pb2_grpc.MgmtServiceStub(channel)
+        blfinfo = await stub.BloomInfo(empty_pb2.Empty())
+        logger.info(f"Connected to FEVER, has BLF with {blfinfo.elements} items and capacity {blfinfo.capacity}")
+    return establish_stream
 
-async def start(zmq_endpoint: str, snapshot: int):
+
+async def start(zmq_endpoint: str, snapshot: int, socket: str):
     """
-    Starts the template app.
+    Starts the app.
     @param zmq_endpoint The ZMQ management endpoint of Threat Bus ('host:port')
     @param snapshot An integer value to request n days of historical IoC items
     """
@@ -226,8 +248,19 @@ async def start(zmq_endpoint: str, snapshot: int):
     async_tasks.append(
         asyncio.create_task(receive(pub_endpoint, p2p_topic, indicator_queue))
     )
-    async_tasks.append(asyncio.create_task(do_something_with_intel(indicator_queue)))
 
+    # Create a reconnector closure wrapping the socket address
+    reconn = get_reconnector(socket)
+  
+    # Do initial connect
+    await reconn()
+
+    # Start async task to process incoming indicators
+    async_tasks.append(
+        asyncio.create_task(add_indicator(indicator_queue, reconn))
+    )
+
+    # Run logic tasks
     loop = asyncio.get_event_loop()
     for s in [signal.SIGHUP, signal.SIGTERM, signal.SIGINT]:
         loop.add_signal_handler(s, lambda: asyncio.create_task(stop_signal()))
@@ -269,22 +302,31 @@ async def receive(pub_endpoint: str, topic: str, indicator_queue: asyncio.Queue)
             await asyncio.sleep(0.01)  # Free event loop for other tasks
 
 
-async def do_something_with_intel(indicator_queue: asyncio.Queue):
+async def add_indicator(indicator_queue: asyncio.Queue, reconn: Callable[[], None]):
     """
-    Does something with the received indicators.
+    Adds a received indicator to the Bloom filter.
     @param indicator_queue The queue to put arriving IoCs into
     """
+    global stub
     while True:
         msg = await indicator_queue.get()
         indicator = parse(msg, allow_custom=True)
-        logger.debug(f"Got indicator from Threat Bus: {indicator}")
-        # Do something with it, e.g., check its type and then start operating on
-        # the timestamps, the STIX pattern, ...
+        pair = stix2_helpers.split_object_path_and_value(indicator.pattern)
+        logger.debug(f"Got indicator from Threat Bus: {pair}")
+        # XXX check type
+        while True:
+            try:
+                result = await stub.BloomAdd(iter([mgmt_pb2.MgmtBloomAddRequest(ioc=pair[1])]))
+                logger.debug(f"Added {result.added} item(s)")
+            except grpc.RpcError:
+                logging.exception("error during BloomAdd request")
+                await reconn()
+            else:
+                break
         indicator_queue.task_done()
 
 
 def main():
-    ## Default list of settings files for Dynaconf to parse.
     settings_files = ["config.yaml", "config.yml"]
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", "-c", help="path to a configuration file")
@@ -292,13 +334,12 @@ def main():
     if args.config:
         if not args.config.endswith("yaml") and not args.config.endswith("yml"):
             sys.exit("Please provide a `yaml` or `yml` configuration file.")
-        ## Allow users to provide a custom config file that takes precedence.
         settings_files = [args.config]
 
     config = Dynaconf(
         settings_files=settings_files,
         load_dotenv=True,
-        envvar_prefix="ZMQ_APP_TEMPLATE",
+        envvar_prefix="FEVER_THREATBUS",
     )
 
     try:
@@ -314,6 +355,7 @@ def main():
                 start(
                     config.threatbus,
                     config.snapshot,
+                    config.socket,
                 )
             )
         except (KeyboardInterrupt, SystemExit):
@@ -322,7 +364,7 @@ def main():
             if user_exit:
                 # Tasks were cancelled because the user stopped the app.
                 return
-            logger.info("Restarting template app ...")
+            logger.info("Restarting FEVER-ThreatBus app ...")
 
 
 if __name__ == "__main__":
