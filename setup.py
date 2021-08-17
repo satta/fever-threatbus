@@ -26,7 +26,8 @@ setup(
         "stix2 >= 2.1, < 3.0",
         "threatbus >= 2021.5.27",
         "grpcio",
-        "protobuf"    ],
+        "protobuf",
+    ],
     keywords=[
         "open source",
         "threatbus",
