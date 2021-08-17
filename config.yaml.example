@@ -8,4 +8,9 @@ logging:
 threatbus: localhost:13370
 snapshot: 30
 
+# Socket for the FEVER gRPC connection
 socket: /tmp/fever-mgmt.sock
+# STIX Object Paths to include in Bloom filter additions
+object_paths:
+  - domain-name:value
+  - url:value

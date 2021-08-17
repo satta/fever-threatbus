@@ -3,7 +3,7 @@
 import argparse
 import asyncio
 import atexit
-from typing import Callable
+from typing import Callable, List
 from dynaconf import Dynaconf, Validator
 from dynaconf.base import Settings
 from dynaconf.utils.boxing import DynaBox
@@ -68,6 +68,7 @@ def validate_config(config: Settings):
         ),
         Validator("threatbus", required=True),
         Validator("socket", required=True),
+        Validator("object_paths", len_min=1, required=True),
     ]
     config.validators.register(*validators)
     config.validators.validate()
@@ -210,7 +211,7 @@ def get_reconnector(socket: str):
     return establish_stream
 
 
-async def start(zmq_endpoint: str, snapshot: int, socket: str):
+async def start(zmq_endpoint: str, snapshot: int, socket: str, opaths: List[str]):
     """
     Starts the app.
     @param zmq_endpoint The ZMQ management endpoint of Threat Bus ('host:port')
@@ -261,7 +262,9 @@ async def start(zmq_endpoint: str, snapshot: int, socket: str):
     await reconn()
 
     # Start async task to process incoming indicators
-    async_tasks.append(asyncio.create_task(add_indicator(indicator_queue, reconn)))
+    async_tasks.append(
+        asyncio.create_task(add_indicator(indicator_queue, reconn, opaths))
+    )
 
     # Run logic tasks
     loop = asyncio.get_event_loop()
@@ -305,7 +308,9 @@ async def receive(pub_endpoint: str, topic: str, indicator_queue: asyncio.Queue)
             await asyncio.sleep(0.01)  # Free event loop for other tasks
 
 
-async def add_indicator(indicator_queue: asyncio.Queue, reconn: Callable[[], None]):
+async def add_indicator(
+    indicator_queue: asyncio.Queue, reconn: Callable[[], None], opaths: List[str]
+):
     """
     Adds a received indicator to the Bloom filter.
     @param indicator_queue The queue to put arriving IoCs into
@@ -314,9 +319,14 @@ async def add_indicator(indicator_queue: asyncio.Queue, reconn: Callable[[], Non
     while True:
         msg = await indicator_queue.get()
         indicator = parse(msg, allow_custom=True)
+        logger.debug(f"Got indicator from Threat Bus: {indicator}")
         pair = stix2_helpers.split_object_path_and_value(indicator.pattern)
-        logger.debug(f"Got indicator from Threat Bus: {pair}")
-        # XXX check type
+        if len(pair) != 2:
+            logger.warning(f"Invalid indicator pattern {indicator.pattern}, skipping")
+            continue
+        if pair[0] not in opaths:
+            logger.warning(f"Object path {pair[0]} not configured, skipping")
+            continue
         while True:
             try:
                 result = await stub.BloomAdd(
@@ -361,6 +371,7 @@ def main():
                     config.threatbus,
                     config.snapshot,
                     config.socket,
+                    config.object_paths,
                 )
             )
         except (KeyboardInterrupt, SystemExit):
