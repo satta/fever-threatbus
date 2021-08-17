@@ -3,7 +3,7 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-import mgmt_pb2 as mgmt__pb2
+from . import mgmt_pb2 as mgmt__pb2
 
 
 class MgmtServiceStub(object):
@@ -16,30 +16,30 @@ class MgmtServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Alive = channel.unary_unary(
-                '/mgmt.MgmtService/Alive',
-                request_serializer=mgmt__pb2.MgmtAliveRequest.SerializeToString,
-                response_deserializer=mgmt__pb2.MgmtAliveResponse.FromString,
-                )
+            "/mgmt.MgmtService/Alive",
+            request_serializer=mgmt__pb2.MgmtAliveRequest.SerializeToString,
+            response_deserializer=mgmt__pb2.MgmtAliveResponse.FromString,
+        )
         self.BloomInfo = channel.unary_unary(
-                '/mgmt.MgmtService/BloomInfo',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=mgmt__pb2.MgmtBloomInfoResponse.FromString,
-                )
+            "/mgmt.MgmtService/BloomInfo",
+            request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            response_deserializer=mgmt__pb2.MgmtBloomInfoResponse.FromString,
+        )
         self.BloomAdd = channel.stream_unary(
-                '/mgmt.MgmtService/BloomAdd',
-                request_serializer=mgmt__pb2.MgmtBloomAddRequest.SerializeToString,
-                response_deserializer=mgmt__pb2.MgmtBloomAddResponse.FromString,
-                )
+            "/mgmt.MgmtService/BloomAdd",
+            request_serializer=mgmt__pb2.MgmtBloomAddRequest.SerializeToString,
+            response_deserializer=mgmt__pb2.MgmtBloomAddResponse.FromString,
+        )
         self.BloomSave = channel.unary_unary(
-                '/mgmt.MgmtService/BloomSave',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
+            "/mgmt.MgmtService/BloomSave",
+            request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
         self.BloomReload = channel.unary_unary(
-                '/mgmt.MgmtService/BloomReload',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
+            "/mgmt.MgmtService/BloomReload",
+            request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
 
 
 class MgmtServiceServicer(object):
@@ -48,152 +48,213 @@ class MgmtServiceServicer(object):
     def Alive(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def BloomInfo(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def BloomAdd(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def BloomSave(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def BloomReload(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
 
 def add_MgmtServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Alive': grpc.unary_unary_rpc_method_handler(
-                    servicer.Alive,
-                    request_deserializer=mgmt__pb2.MgmtAliveRequest.FromString,
-                    response_serializer=mgmt__pb2.MgmtAliveResponse.SerializeToString,
-            ),
-            'BloomInfo': grpc.unary_unary_rpc_method_handler(
-                    servicer.BloomInfo,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=mgmt__pb2.MgmtBloomInfoResponse.SerializeToString,
-            ),
-            'BloomAdd': grpc.stream_unary_rpc_method_handler(
-                    servicer.BloomAdd,
-                    request_deserializer=mgmt__pb2.MgmtBloomAddRequest.FromString,
-                    response_serializer=mgmt__pb2.MgmtBloomAddResponse.SerializeToString,
-            ),
-            'BloomSave': grpc.unary_unary_rpc_method_handler(
-                    servicer.BloomSave,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'BloomReload': grpc.unary_unary_rpc_method_handler(
-                    servicer.BloomReload,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
+        "Alive": grpc.unary_unary_rpc_method_handler(
+            servicer.Alive,
+            request_deserializer=mgmt__pb2.MgmtAliveRequest.FromString,
+            response_serializer=mgmt__pb2.MgmtAliveResponse.SerializeToString,
+        ),
+        "BloomInfo": grpc.unary_unary_rpc_method_handler(
+            servicer.BloomInfo,
+            request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            response_serializer=mgmt__pb2.MgmtBloomInfoResponse.SerializeToString,
+        ),
+        "BloomAdd": grpc.stream_unary_rpc_method_handler(
+            servicer.BloomAdd,
+            request_deserializer=mgmt__pb2.MgmtBloomAddRequest.FromString,
+            response_serializer=mgmt__pb2.MgmtBloomAddResponse.SerializeToString,
+        ),
+        "BloomSave": grpc.unary_unary_rpc_method_handler(
+            servicer.BloomSave,
+            request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        ),
+        "BloomReload": grpc.unary_unary_rpc_method_handler(
+            servicer.BloomReload,
+            request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'mgmt.MgmtService', rpc_method_handlers)
+        "mgmt.MgmtService", rpc_method_handlers
+    )
     server.add_generic_rpc_handlers((generic_handler,))
 
 
- # This class is part of an EXPERIMENTAL API.
+# This class is part of an EXPERIMENTAL API.
 class MgmtService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Alive(request,
+    def Alive(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mgmt.MgmtService/Alive',
+            "/mgmt.MgmtService/Alive",
             mgmt__pb2.MgmtAliveRequest.SerializeToString,
             mgmt__pb2.MgmtAliveResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def BloomInfo(request,
+    def BloomInfo(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mgmt.MgmtService/BloomInfo',
+            "/mgmt.MgmtService/BloomInfo",
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             mgmt__pb2.MgmtBloomInfoResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def BloomAdd(request_iterator,
+    def BloomAdd(
+        request_iterator,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.stream_unary(
+            request_iterator,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/mgmt.MgmtService/BloomAdd',
+            "/mgmt.MgmtService/BloomAdd",
             mgmt__pb2.MgmtBloomAddRequest.SerializeToString,
             mgmt__pb2.MgmtBloomAddResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def BloomSave(request,
+    def BloomSave(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mgmt.MgmtService/BloomSave',
+            "/mgmt.MgmtService/BloomSave",
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
 
     @staticmethod
-    def BloomReload(request,
+    def BloomReload(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
             target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mgmt.MgmtService/BloomReload',
+            "/mgmt.MgmtService/BloomReload",
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )

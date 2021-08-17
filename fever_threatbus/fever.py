@@ -14,7 +14,7 @@ import sys
 from threatbus.logger import setup as setup_logging_threatbus
 from threatbus import stix2_helpers
 import zmq
-import mgmt_pb2, mgmt_pb2_grpc
+from . import mgmt_pb2, mgmt_pb2_grpc
 import grpc
 from google.protobuf import empty_pb2
 
@@ -192,8 +192,10 @@ async def heartbeat(endpoint: str, p2p_topic: str, interval: int = 5):
 
 ### --------------------------- The actual app logic ---------------------------
 
+
 def get_reconnector(socket: str):
     global channel, stub, logger
+
     async def establish_stream():
         global channel, stub, logger
         logger.info(f"Connecting to {socket}")
@@ -201,7 +203,10 @@ def get_reconnector(socket: str):
         await channel.channel_ready()
         stub = mgmt_pb2_grpc.MgmtServiceStub(channel)
         blfinfo = await stub.BloomInfo(empty_pb2.Empty())
-        logger.info(f"Connected to FEVER, has BLF with {blfinfo.elements} items and capacity {blfinfo.capacity}")
+        logger.info(
+            f"Connected to FEVER, has BLF with {blfinfo.elements} items and capacity {blfinfo.capacity}"
+        )
+
     return establish_stream
 
 
@@ -251,14 +256,12 @@ async def start(zmq_endpoint: str, snapshot: int, socket: str):
 
     # Create a reconnector closure wrapping the socket address
     reconn = get_reconnector(socket)
-  
+
     # Do initial connect
     await reconn()
 
     # Start async task to process incoming indicators
-    async_tasks.append(
-        asyncio.create_task(add_indicator(indicator_queue, reconn))
-    )
+    async_tasks.append(asyncio.create_task(add_indicator(indicator_queue, reconn)))
 
     # Run logic tasks
     loop = asyncio.get_event_loop()
@@ -316,7 +319,9 @@ async def add_indicator(indicator_queue: asyncio.Queue, reconn: Callable[[], Non
         # XXX check type
         while True:
             try:
-                result = await stub.BloomAdd(iter([mgmt_pb2.MgmtBloomAddRequest(ioc=pair[1])]))
+                result = await stub.BloomAdd(
+                    iter([mgmt_pb2.MgmtBloomAddRequest(ioc=pair[1])])
+                )
                 logger.debug(f"Added {result.added} item(s)")
             except grpc.RpcError:
                 logging.exception("error during BloomAdd request")
