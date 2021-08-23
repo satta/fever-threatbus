@@ -319,9 +319,15 @@ async def add_indicator(
     while True:
         msg = await indicator_queue.get()
         indicator = parse(msg, allow_custom=True)
+        if "x_threatbus_update" in indicator and indicator["x_threatbus_update"] == REMOVE:
+            logger.warning(f"Indicator delivery indicates REMOVE, skipping")
+            continue
         logger.debug(f"Got indicator from Threat Bus: {indicator}")
+        if not stix2_helpers.is_point_equality_ioc(indicator.pattern):
+            logger.warning(f"Pattern {indicator.pattern} is not a point IoC, skipping")
+            continue
         pair = stix2_helpers.split_object_path_and_value(indicator.pattern)
-        if len(pair) != 2:
+        if not pair or len(pair) != 2:
             logger.warning(f"Invalid indicator pattern {indicator.pattern}, skipping")
             continue
         if pair[0] not in opaths:
